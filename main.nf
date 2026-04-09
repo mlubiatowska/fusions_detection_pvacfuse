@@ -7,7 +7,6 @@ nextflow.enable.dsl     = 2
 
 include { Jaffal } from './modules/jaffal.nf'
 include { Longgf } from './modules/longgf.nf'
-include { NanoFG } from './modules/nanofg.nf'
 include { Consensus } from './modules/consensus.nf'
 include { AGFusion } from './modules/agfusions.nf'
 include { PvacFuse } from './modules/pvacfuse.nf'
@@ -51,8 +50,6 @@ workflow {
 
     Longgf(bam_channel)
 
-    NanoFG(dna_channel)
-
     //find consensus between outputs, and filter out only consensus call from within Longgf (or Jaffal) output
     fusion_output_ch = Jaffal.out.join(Longgf.out)
 
@@ -71,7 +68,6 @@ workflow {
     publish:
     jaffal                = Jaffal.out
     longgf                = Longgf.out
-    nanofg                = NanoFG.out
     consensus             = Consensus.out
     agfusions             = AGFusion.out
     pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse.out : Channel.empty()
@@ -81,7 +77,6 @@ output {
 
     jaffal              { path { name, jaffal           -> "${name}/jaffal" } }
     longgf              { path { name, longgf           -> "${name}/longgf" } }
-    nanofg              { path { name, nanofg           -> "${name}/nanofg" } }
     consensus           { path { name, consensus        -> "${name}/consensus" } }
     agfusions           { path { name, agfusions        -> "${name}/agfusions" } }
     pvacfuse_neoag      { path { name, pvacfuse_neoag   -> "${name}/pvacfuse" } }
