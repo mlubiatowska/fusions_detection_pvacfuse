@@ -10,7 +10,7 @@ process Longgf {
     tuple val(name), path(unfiltered_rna_bam)
 
     output:
-    tuple val(name), path("LongGF.MM${name}.log")
+    tuple val(name), path("LongGF.${name}.log")
 
     script:
     """
@@ -22,12 +22,12 @@ process Longgf {
     ${name}_Baseline_reads_aln_name_sorted.bam \
     ${params.gtf} \
     100 50 200 0 0 2 \
-    > LongGF.MM${name}.log
+    > LongGF.${name}.log
     
     """
     stub:
     """
-    touch LongGF.MM${name}.log
+    touch LongGF.${name}.log
     """
 }
 

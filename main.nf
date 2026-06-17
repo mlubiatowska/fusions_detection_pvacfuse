@@ -18,21 +18,27 @@ workflow {
     // Parse input CSV and create two separate channels   
     input_data = Channel
         .fromPath(params.input)
-        .splitCsv(header: ['name', 'unfiltered_rna_bam', 'rna_fastq'], sep: ",")
+        .splitCsv(header: ['name', 'unfiltered_rna_bam', 'rna_fastq', 'hla_alleles'], sep: ",")
         .map{ row -> tuple(
             row.name, 
             file(row.unfiltered_rna_bam, checkIfExists: true),      // Convert to Path object
-            file(row.rna_fastq, checkIfExists: true)      // Convert to Path object
+            file(row.rna_fastq, checkIfExists: true),      // Convert to Path object
+            file(row.hla_alleles, checkIfExists: true)      // Convert to Path object
         ) }
         //.map{ row -> tuple(row.name, row.normal_vcf, row.tumour_vcf, row.hg_bam, row.hla_alleles) }
 
     // Channel 1: name, RNA-seq BAM 
     bam_channel = input_data
-        .map{ name, unfiltered_rna_bam, rna_fastq -> tuple(name, unfiltered_rna_bam) }
+        .map{ name, unfiltered_rna_bam, rna_fastq, hla_alleles -> tuple(name, unfiltered_rna_bam) }
 
     // Channel 2: name, RNA-seq FASTQ 
     fastq_channel = input_data
-        .map{ name, unfiltered_rna_bam, rna_fastq -> tuple(name, rna_fastq) }
+        .map{ name, unfiltered_rna_bam, rna_fastq, hla_alleles -> tuple(name, rna_fastq) }
+
+    //Channel 3: name, hla_alleles
+    alleles_channel = input_data
+        .map{ name, unfiltered_rna_bam, rna_fastq, hla_alleles -> tuple(name, hla_alleles)}
+
 
     //Workflow logic
     //Start by calling with multiple fusion gene calles 
