@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-process NanoFG {
+process NanoFG_Somatic {
     cpus params.cpus
     tag "${name}" 
 
@@ -8,27 +8,25 @@ process NanoFG {
     module load  Python/3.11.5-GCCcore-13.2.0
 
     input:
-    tuple val(name), path(dna_bam)
+    tuple val(name), path(nanofg_bam)
 
     output:
     tuple val(name), path("")
 
     script:
-    """
-    mkdir ${name}_fastq
-
-    samtools fastq \
-        --threads ${params.cpus} \
-        -n -0 ./${name}_fastq/${name}_baseline.fastq \
-        ${dna_bam}
+    """"
 
     source ${NANOFG_VENV}/activate
 
     bash ${NANOFG}/NanoFG.sh \
-        -f ./${name}_fastq/ \
-        -n ${name} \
-        -o . \
-        -t ${params.cpus}
+        -b ${OUT}/${SAMPLE}_somatic_baseline_nochr.bam \
+        -n ${SAMPLE} \
+        -venv ${NANOFG_VENV}/activate \
+        -o ${OUT}/BAM_out \
+        -gtf ${GTF} \
+        -t 6 \
+        --without_last
+
     """
     stub:
     """
