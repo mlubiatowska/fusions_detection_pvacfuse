@@ -1,0 +1,28 @@
+#!/usr/bin/env nextflow
+
+process NanoFG_BAMprep {
+    cpus params.cpus
+    tag "${name}" 
+
+    module load SAMtools/1.11
+
+    input:
+    tuple val(name), path(dna_bam)
+
+    output:
+    tuple val(name), path("${SAMPLE}_somatic_baseline_nochr.bam"), path("${SAMPLE}_somatic_baseline_nochr.bam.bai")
+
+    script:
+    """
+    samtools view -H ${DNA_BAM} | sed -E 's/SN:chr([0-9XYM]+)/SN:\1/' > header.sam
+
+    samtools reheader header.sam ${DNA_BAM} > ${SAMPLE}_somatic_baseline_nochr.bam
+
+    samtools index ${SAMPLE}_somatic_baseline_nochr.bam
+        
+    """
+    stub:
+    """
+    
+    """
+}
