@@ -14,8 +14,7 @@ process Jaffal {
 
     script:
     """
-    /JAFFA/JAFFAL.groovy \
-      rna_fastq  
+    bpipe run /JAFFA/JAFFAL.groovy ${rna_fastq}
     """
     stub: 
     """

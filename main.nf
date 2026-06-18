@@ -6,8 +6,8 @@ nextflow.enable.dsl     = 2
 
 
 include { Jaffal } from './modules/jaffal.nf'
+include { LonggfPrep } from './modules/longgf.nf'
 include { Longgf } from './modules/longgf.nf'
-include { NanoFG } from './modules/nanofg.nf'
 include { Consensus } from './modules/consensus.nf'
 include { AGFusion } from './modules/agfusions.nf'
 include { PvacFuse } from './modules/pvacfuse.nf'
@@ -44,7 +44,9 @@ workflow {
     //Start by calling with multiple fusion gene calles 
     Jaffal(fastq_channel)
 
-    Longgf(bam_channel)
+    LonggfPrep(bam_channel)
+
+    Longgf(LonggfPrep.out)
 
     //find consensus between outputs, and filter out only consensus call from within Longgf (or Jaffal) output
     fusion_output_ch = Jaffal.out.join(Longgf.out)
