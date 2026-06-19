@@ -48,12 +48,12 @@ process Consensus {
     }
 
     jaffal <- jaffal |>
-    mutate(fusion_norm = normalize_pair(`fusion genes`))
+    mutate(fusion_norm = normalize_pair(\`fusion genes\`))
 
     longgf <- longgf |>
-    mutate(fusion_norm = normalize_pair(`fusion genes`))
+    mutate(fusion_norm = normalize_pair(\`fusion genes\`))
 
-    consensus <- intersect(jaffal$fusion_norm, longgf$fusion_norm)
+    consensus <- intersect(jaffal\$fusion_norm, longgf\$fusion_norm)
 
     jaffal_out <- jaffal |>
     filter(fusion_norm %in% consensus) |>
