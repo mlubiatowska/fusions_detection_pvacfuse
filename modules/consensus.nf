@@ -28,7 +28,7 @@ process Consensus {
     ) |>
     separate(
         col = info,
-        into = c("fusion genes", "read_count", "chr1", "chr2"),
+        into = c("fusion_genes", "read_count", "chr1", "chr2"),
         sep = " "
     ) |>
     separate(
@@ -48,10 +48,10 @@ process Consensus {
     }
 
     jaffal <- jaffal |>
-    mutate(fusion_norm = normalize_pair(\`fusion genes\`))
+    mutate(fusion_norm = normalize_pair(fusion_genes))
 
     longgf <- longgf |>
-    mutate(fusion_norm = normalize_pair(\`fusion genes\`))
+    mutate(fusion_norm = normalize_pair(fusion_genes))
 
     consensus <- intersect(jaffal\$fusion_norm, longgf\$fusion_norm)
 
