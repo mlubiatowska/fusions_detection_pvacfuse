@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 process LonggfPrep {
-    cpus params.cpus
+    cpus 1
     tag "${name}" 
 
     module params.samtools

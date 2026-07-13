@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 process AGFusion {
-    cpus params.cpus
+    cpus 1
     tag "${name}"  
 
     input:

@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 process Consensus {
-    cpus params.cpus
+    cpus 1
     tag "${name}" 
 
     input:
@@ -11,7 +11,7 @@ process Consensus {
 
     script:
     """
-    #!/usr/bin/R
+    #!/usr/bin/env Rscript
 
     library(tidyverse)
 
@@ -28,7 +28,7 @@ process Consensus {
     ) |>
     separate(
         col = info,
-        into = c("fusion_genes", "read_count", "chr1", "chr2"),
+        into = c("fusion genes", "read_count", "chr1", "chr2"),
         sep = " "
     ) |>
     separate(
@@ -48,10 +48,10 @@ process Consensus {
     }
 
     jaffal <- jaffal |>
-    mutate(fusion_norm = normalize_pair(fusion_genes))
+    mutate(fusion_norm = normalize_pair(`fusion genes`))
 
     longgf <- longgf |>
-    mutate(fusion_norm = normalize_pair(fusion_genes))
+    mutate(fusion_norm = normalize_pair(`fusion genes`))
 
     consensus <- intersect(jaffal\$fusion_norm, longgf\$fusion_norm)
 
@@ -59,8 +59,8 @@ process Consensus {
     filter(fusion_norm %in% consensus) |>
     select(!fusion_norm)
 
-    write_csv(jaffal_out, "${jaffal_longgfconsensus.csv}")
-    
+    write_csv(jaffal_out, 'jaffal_longgfconsensus.csv')
+
     """
     stub:
     """
