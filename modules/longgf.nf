@@ -26,7 +26,7 @@ process LonggfPrep {
 
 
 process Longgf {
-    cpus params.cpus
+    cpus 1
     tag "${name}" 
 
     input:
