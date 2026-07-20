@@ -29,8 +29,8 @@ nextflow run https://github.com/mlubiatowska/fusions_detection_pvacfuse.git -r m
 Consensus called based on gene names and their order in fusion candidates. Fusion calling using:
 - JAFFAL (long read version of JAFFA) v2.3,
 - LongGF v0.1.2 with gencode.v29.chr_patch_hapl_scaff.annotation.gtf,
-- NanoFG (no version - installed 30/03/2023, with dependencies including python Python/3.11, SAMtools/1.11, minimap2-2.30, LAST (from util-linux 2.32.1), NanoSV v1.2.4, PyVCF v0.6.8, pysam 0.23.3, wtdbg2.5, primer3 v 2.6.1). Reference used was /data/reference-data/iGenomes/Homo_sapiens/NCBI/GRCh38/Sequence/WholeGenomeFasta/genome.fa and lastdb database was built based on it.
-	- currently not included in the pipeline 
+- *NanoFG (no version - installed 30/03/2023, with dependencies including python Python/3.11, SAMtools/1.11, minimap2-2.30, LAST (from util-linux 2.32.1), NanoSV v1.2.4, PyVCF v0.6.8, pysam 0.23.3, wtdbg2.5, primer3 v 2.6.1). Reference used was /data/reference-data/iGenomes/Homo_sapiens/NCBI/GRCh38/Sequence/WholeGenomeFasta/genome.fa and lastdb database was built based on it.*
+	- *currently not included in the pipeline*
 - AGFusion with Ensembl release 95 database
 - pVACtools v6.0.5
 
@@ -39,7 +39,7 @@ Consensus called based on gene names and their order in fusion candidates. Fusio
 - RNAseq BAM,
 - RNAseq FASTQ,
 - HLA-LA output, 
-- * BAM files for WGS - currently not needed
+- *BAM files for WGS - currently not needed*
 
 ### OUTPUT: 
 - JAFFAL and LongGF output files with fusion genes, 
