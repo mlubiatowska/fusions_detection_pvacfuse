@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 process PvacFuse {
-    cpus params.cpus
+    cpus 1
     tag "${name}"
 
     input:
@@ -55,13 +55,13 @@ process PvacFuse {
     HLA_ALLELES=\$(cat ${name}_HLA_alleles.txt)
 
     pvacfuse run \
-        agfusion_filtered \
+        ${agfusion} \
         ${name} \
         \${HLA_ALLELES} \
         all \
         ${name}_fusion_neoag \
         --percentile-threshold 2 \
-        --n-threads ${params.cpus} \
+        --n-threads 1 \
         --iedb-install-directory /opt/iedb
 
     """

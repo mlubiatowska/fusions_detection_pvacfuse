@@ -7,7 +7,7 @@ process Consensus {
     tuple val(name), path(jaffal_csv), path(longgf_log)
 
     output:
-    tuple val(name), path("consensus_NOnonmalignant.csv"), path("consensus_NOnonmalignant_breakpoints.csv")
+    tuple val(name), path("consensus_NOnonmalignant.csv"), path("consensus_NOnonmalignant_breakpoints_HighConfidence.csv")
 
     script:
     """
@@ -115,16 +115,17 @@ process Consensus {
         filter(!(fusion_norm %in% nonmalignant_fusions\$fusion_norm)) |>
         filter(fusion_norm %in% consensus) |>
         find_breakpoint_matches(longgf, tolerance = ${params.breakpoint_tolerance}, consensus_by = "fusion_norm") |>
-        select(!c(fusion_norm))
+        select(!c(fusion_norm)) |>
+        filter(classification == 'HighConfidence')
     
     write_csv(jaffal_consensus, 'consensus_NOnonmalignant.csv')
 
-    write_csv(jaffal_breakpoint_consensus, 'consensus_NOnonmalignant_breakpoints.csv')
+    write_csv(jaffal_breakpoint_consensus, 'consensus_NOnonmalignant_breakpoints_HighConfidence.csv')
 
     """
     stub:
     """
     touch consensus_NOnonmalignant.csv
-    touch consensus_NOnonmalignant_breakpoints.csv
+    touch consensus_NOnonmalignant_breakpoints_HighConfidence.csv
     """
 }

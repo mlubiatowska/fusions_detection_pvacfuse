@@ -5,7 +5,7 @@ process AGFusion {
     tag "${name}"  
 
     input:
-    tuple val (name), path(consensus_jaffal), path(consensus_breakpoints) //LongGF.${name}.log
+    tuple val (name), path(consensus_jaffal), path(consensus_breakpoints)
 
     output:
     tuple val(name), path("agfusion")
@@ -13,8 +13,8 @@ process AGFusion {
     script:
     """
     agfusion batch \
-      -f consensus_breakpoints \
-      -a longgf \
+      -f ${consensus_breakpoints} \
+      -a jaffa \
       -db ${params.db}  \
       -o agfusion \
       --middlestar \
