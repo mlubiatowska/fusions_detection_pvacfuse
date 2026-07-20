@@ -7,16 +7,21 @@
 ## Running the pipeline 
 ### Command
 ```
-nextflow run https://github.com/mlubiatowska/fusions_detection_pvacfuse.git -r only_concordance \
+nextflow pull https://github.com/mlubiatowska/fusions_detection_pvacfuse.git -r main
+nextflow run https://github.com/mlubiatowska/fusions_detection_pvacfuse.git -r main \
     --input ${INPUT_FILE} \
     --outdir ${OUTPUT_DIR} \
 	--include_pvacfuse
 ```
 ### Parameters:
 ```
- --input: csv file with data for all sampes (no header). Earch row should be 1 sample and must contain sample_name, unfiltered_rna_bam, rna_fastq, hla_alleles (this order)
- --outdir: path to output directory. Sub-derectories for each sample_name will be created there
- --include_pvacfuse: OPTIONAL argument to run AGFusion (fusion annotation) and pVACfuse (neoantigen prediction)
+ --input: csv file with data for all sampes (no header). Earch row should be 1 sample and must contain sample_name, unfiltered_rna_bam, rna_fastq, hla_alleles (this order) (required)
+ --outdir: path to output directory. Sub-derectories for each sample_name will be created there (required)
+--min_read_count: minimum number of fusion gene supporting reads in JAFFAL and LongGF (testing with 5) (required)
+--breakpoint_tolerance: maximum distance between breakpoint in JAFFAL and LongGF (testing with 5) (required)
+--nonmalignant_fusions_path: path to recurrent non-malignant fusions to be filtered out (downloaded from Babiceanu et al Nucleic Acids Res 2016) (required)
+ --include_pvacfuse: OPTIONAL argument to run AGFusion (fusion annotation) and pVACfuse (neoantigen prediction). Can be added after fusion prediction has been run using nextflow parameter -resume 
+ -c: path to nextflow.config
 ```
 
 ## Additional info about the pipeline 
