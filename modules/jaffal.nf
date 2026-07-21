@@ -1,7 +1,6 @@
 #!/usr/bin/env nextflow
 
 process Jaffal {
-    cpus 4
     tag "${name}" 
 
     module params.python
