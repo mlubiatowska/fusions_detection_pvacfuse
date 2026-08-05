@@ -60,6 +60,7 @@ process PvacFuse {
         \${HLA_ALLELES} \
         all \
         ${name}_fusion_neoag \
+        --percentile-threshold 2 \
         --iedb-install-directory /opt/iedb
 
     """
