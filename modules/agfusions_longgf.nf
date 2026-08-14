@@ -5,7 +5,7 @@ process AGFusion_LongGF {
     tag "${name}"  
 
     input:
-    tuple val (name), path(), path(longgf_consensus_breakpoints)
+    tuple val (name), path(longgf_consensus_breakpoints)
 
     output:
     tuple val(name), path("agfusion_longgf")
