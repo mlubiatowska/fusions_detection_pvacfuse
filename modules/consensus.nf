@@ -7,7 +7,7 @@ process Consensus {
     tuple val(name), path(jaffal_csv), path(longgf_log)
 
     output:
-    tuple val(name), path("jaffal_consensus_NOnonmalignant.csv"), path("jaffal_breakpoint_consensus_NOnonmalignant.csv"), path('longgf_breakpoint_consensus_NOnonmalignant.csv')
+    tuple val(name), path("jaffal_consensus_NOnonmalignant.csv"), path("jaffal_breakpoint_consensus_NOnonmalignant.csv"), path("longgf_breakpoint_consensus_NOnonmalignant.csv")
 
     script:
     """
