@@ -92,7 +92,7 @@ process Consensus {
             abs(high_break_1 - high_break_2) %in% tolerance
             ) |>
             select(ends_with("_1")) |>
-            rename_with(~ sub("_1$", "", .x)) |>
+            rename_with(~ sub("_1\$", "", .x)) |>
             distinct() |>
             select(!c(high_break, low_break))
     }
