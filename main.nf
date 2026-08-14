@@ -86,7 +86,7 @@ output {
 
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
-    consensus           { path { name, consensus, consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
+    consensus           { path { name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
     jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
     longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } }
 }
