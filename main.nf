@@ -11,7 +11,8 @@ include { Longgf } from './modules/longgf.nf'
 include { Consensus } from './modules/consensus.nf'
 include { AGFusion } from './modules/agfusions.nf'
 include { PvacFuse } from './modules/pvacfuse.nf'
-
+include { AGFusion_LongGF } from './modules/agfusions_longgf.nf'
+include { PvacFuse_LongGF } from './modules/pvacfuse_longgf'
 
 workflow {
     main:
@@ -56,12 +57,20 @@ workflow {
     //Run pVACfuse on AGFusion output (optional)
     if (params.containsKey('include_pvacfuse') && params.include_pvacfuse) {
 
-        //Input into AGFusion
-        AGFusion(Consensus.out)
-
-        //Input into pVACfuse
-        pvacfuse_input_ch = AGFusion.out.join(alleles_channel)
+        //Input into AGFusion and pvacfuse -for jaffal output 
+        pvac_jaffal_ch = Consensus.out
+            .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, jaffal_consensus_breakpoints)}
+        AGFusion(pvac_jaffal_ch)
+        jaffal_pvacfuse_input_ch = AGFusion.out.join(alleles_channel)
         PvacFuse(pvacfuse_input_ch)
+
+        //Input into AGFusion and pvacfuse -for longgf output
+        pvac_longgf_ch = Consensus.out
+            .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, longgf_consensus_breakpoints) }
+        AGFusion_LongGF(pvac_longgf_ch)
+        longgf_pvacfuse_input_ch = AGFusion_LongGF.out.join(alleles_channel)
+        PvacFuse_LongGF(longgf_pvacfuse_input_ch)
+        
     }
 
     //tumour_channel.view()
@@ -69,7 +78,8 @@ workflow {
     jaffal                = Jaffal.out
     longgf                = Longgf.out
     consensus             = Consensus.out
-    pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse.out : Channel.empty()
+    jaffal_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse.out : Channel.empty()
+    longgf_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse_LongGF.out : Channel.empty()
 }
 
 output {    
@@ -77,5 +87,6 @@ output {
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
     consensus           { path { name, consensus, consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
-    pvacfuse_neoag      { path { name, pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}" } }
+    jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
+    longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } }
 }

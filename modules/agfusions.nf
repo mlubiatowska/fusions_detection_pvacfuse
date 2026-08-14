@@ -5,7 +5,7 @@ process AGFusion {
     tag "${name}"  
 
     input:
-    tuple val (name), path(consensus_jaffal), path(consensus_breakpoints)
+    tuple val (name), path(consensus_breakpoints)
 
     output:
     tuple val(name), path("agfusion")
