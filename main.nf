@@ -62,7 +62,7 @@ workflow {
             .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, jaffal_consensus_breakpoints)}
         AGFusion(pvac_jaffal_ch)
         jaffal_pvacfuse_input_ch = AGFusion.out.join(alleles_channel)
-        PvacFuse(pvacfuse_input_ch)
+        PvacFuse(jaffal_pvacfuse_input_ch)
 
         //Input into AGFusion and pvacfuse -for longgf output
         pvac_longgf_ch = Consensus.out
