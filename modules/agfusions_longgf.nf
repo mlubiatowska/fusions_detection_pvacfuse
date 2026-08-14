@@ -14,7 +14,7 @@ process AGFusion_LongGF {
     """
     agfusion batch \
       -f ${longgf_consensus_breakpoints} \
-      -a jaffa \
+      -a longgf \
       -db ${params.db}  \
       -o agfusion_longgf \
       --middlestar \
