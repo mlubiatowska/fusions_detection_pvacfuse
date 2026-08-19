@@ -78,6 +78,8 @@ workflow {
     jaffal                = Jaffal.out
     longgf                = Longgf.out
     consensus             = Consensus.out
+    jaffal_agfusion      = AGFusion.out
+    longgf_agfusion      = AGFusion_LongGF.out
     jaffal_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse.out : Channel.empty()
     longgf_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse_LongGF.out : Channel.empty()
 }
@@ -87,6 +89,8 @@ output {
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
     consensus           { path { name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
+    jaffal_agfusion     { path { name, agfusion                                 -> "${name/agfusion/jaffal}"}}
+    longgf_agfusion     { path { name, agfusion                                 -> "${name/agfusion/longgf}"}}
     jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
     longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } }
 }
