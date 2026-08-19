@@ -59,44 +59,6 @@ process Consensus {
             select(!c(high_break, low_break))
     }
 
-    find_breakpoint_matches_03 <- function(df1, df2, tolerance = c(0, 3), consensus_by = "fusion_norm") {
-    
-        df1 <- df1 |>
-            rowwise() |>
-            mutate(low_break = min(base1, base2), 
-                high_break = max(base1, base2)) |>
-            ungroup() |>
-            rename_with(~ paste0(.x, "_1"))
-        
-        
-        df2 <- df2 |>
-            rowwise() |>
-            mutate(low_break = min(base1, base2), 
-                high_break = max(base1, base2)) |>
-            ungroup() |>
-            rename_with(~ paste0(.x, "_2"))
-        
-        by_cols <- setNames(
-            paste0(consensus_by, "_2"),
-            paste0(consensus_by, "_1")
-        )
-        
-        df1 |>
-            inner_join(
-            df2,
-            by = by_cols,
-            relationship = "many-to-many"
-            ) |>
-            filter(
-            abs(low_break_1  - low_break_2)  %in% tolerance,
-            abs(high_break_1 - high_break_2) %in% tolerance
-            ) |>
-            select(ends_with("_1")) |>
-            rename_with(~ sub("_1\$", "", .x)) |>
-            distinct() |>
-            select(!c(high_break, low_break))
-    }
-
     #reading the file with recurrent fusions from previous literature 
     nonmalignant_fusions <- read_csv("${params.nonmalignant_fusions_path}") |>
         mutate(fusion = paste0(up_gene, ':', dw_gene)) |>
@@ -152,7 +114,7 @@ process Consensus {
     jaffal_breakpoint_consensus <- jaffal |>
         filter(!(fusion_norm %in% nonmalignant_fusions\$fusion_norm)) |>
         filter(fusion_norm %in% consensus) |>
-        find_breakpoint_matches_03(longgf, consensus_by = "fusion_norm") |>
+        find_breakpoint_matches(longgf, tolerance = ${params.breakpoint_tolerance}, consensus_by = "fusion_norm") |>
         filter(classification == 'HighConfidence')
     
     longgf_breakpoint_consensus <- longgf_in |>
