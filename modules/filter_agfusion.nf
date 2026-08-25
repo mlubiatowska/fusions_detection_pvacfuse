@@ -12,6 +12,8 @@ process FilterAgfusion {
     AGFUSION=${agfusion}/*/
     FILTERED_DIR=./agfusion_filtered
 
+    mkdir -p "/$FILTERED_DIR"
+
     > problematic_transcripts_report.txt
     > missing_exons_report.txt
 
