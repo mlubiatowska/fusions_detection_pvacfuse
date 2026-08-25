@@ -16,8 +16,8 @@ process FilterAgfusion_Jaffal {
 
     mkdir -p "\$FILTERED_DIR"
 
-    > problematic_transcripts_report.txt
-    > missing_exons_report.txt
+    > problematic_transcripts_report_jaffal.txt
+    > missing_exons_report_jaffal.txt
 
     shopt -s nullglob
     for d in \${AGFUSION}; do
@@ -31,7 +31,7 @@ process FilterAgfusion_Jaffal {
 
         # ---- Case 1: no exons.csv at all -> exclude the WHOLE directory ----
         if [ -z "\$exons" ]; then
-            echo "Missing *exons.csv in: \$d" >> missing_exons_report.txt
+            echo "Missing *exons.csv in: \$d" >> missing_exons_report_jaffal.txt
             continue
         fi
 
@@ -80,7 +80,7 @@ process FilterAgfusion_Jaffal {
                             printf "%s : transcript pair %s,%s missing 3%s exons\\n", file, a[1], a[2], apos
                     }
                 }
-            }' "\$domains" "\$exons" >> problematic_transcripts_report.txt
+            }' "\$domains" "\$exons" >> problematic_transcripts_report_jaffal.txt
 
     done
 
@@ -105,8 +105,8 @@ process FilterAgfusion_LongGF {
 
     mkdir -p "\$FILTERED_DIR"
 
-    > problematic_transcripts_report.txt
-    > missing_exons_report.txt
+    > problematic_transcripts_report_longgf.txt
+    > missing_exons_report_longgf.txt
 
     shopt -s nullglob
     for d in \${AGFUSION}; do
@@ -120,7 +120,7 @@ process FilterAgfusion_LongGF {
 
         # ---- Case 1: no exons.csv at all -> exclude the WHOLE directory ----
         if [ -z "\$exons" ]; then
-            echo "Missing *exons.csv in: \$d" >> missing_exons_report.txt
+            echo "Missing *exons.csv in: \$d" >> missing_exons_report_longgf.txt
             continue
         fi
 
@@ -169,7 +169,7 @@ process FilterAgfusion_LongGF {
                             printf "%s : transcript pair %s,%s missing 3%s exons\\n", file, a[1], a[2], apos
                     }
                 }
-            }' "\$domains" "\$exons" >> problematic_transcripts_report.txt
+            }' "\$domains" "\$exons" >> problematic_transcripts_report_longgf.txt
 
     done
 
