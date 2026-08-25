@@ -97,8 +97,8 @@ output {
     consensus           { path { name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
     jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/jaffal"}}
     longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/longgf"}}
-    filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/jaffal/filtered" } }
-    filtered_longgf_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/longgf/filtered" } }
+    filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/jaffal/" } }
+    filtered_longgf_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/longgf/" } }
     jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
     longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } } 
 }
