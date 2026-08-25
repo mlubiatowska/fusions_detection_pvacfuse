@@ -47,33 +47,41 @@ process FilterAgfusion_Jaffal {
         # ---- Case 3: both files present -> keep the directory, but strip out
         #      only the transcript-pair ROWS in domains.csv that lack full
         #      5'/3' exon coverage. exons.csv itself is left untouched. ----
-        domains_basename=\$(basename "\$domains")
+        exons_basename=\$(basename "\$exons")
 
-        awk -F',' -v file="\$exons" -v domains_out="\$dest/\$domains_basename" -v apos="'" '
-            # ---- First read domains.csv: remember every row, grouped by pair ----
+        awk -F',' -v file="\$exons" -v exons_out="\$dest/\$exons_basename" -v apos="'" '
+            # ---- First read domains.csv: remember which pairs are "expected" ----
             FNR==NR {
-                if(NR==1){ header=\$0; next }
+                if(NR==1) next
                 pair=\$3","\$4
                 domain_pairs[pair]=1
-                domain_lines[pair] = (pair in domain_lines) ? domain_lines[pair] ORS \$0 : \$0
                 next
             }
-            # ---- Now parse exons.csv ----
-            FNR==1 {next}
+            # ---- Now read exons.csv: remember every row, grouped by pair ----
+            FNR==1 { header=\$0; next }
             {
                 pair=\$3","\$4
+                exon_pairs[pair]=1
+                exon_lines[pair] = (pair in exon_lines) ? exon_lines[pair] ORS \$0 : \$0
                 if(pair in domain_pairs){
                     if(\$7 ~ /5 gene/) five[pair]=1
                     if(\$7 ~ /3 gene/) three[pair]=1
                 }
             }
             END{
-                print header > domains_out
-                for(p in domain_pairs){
-                    split(p,a,",")
-                    if(five[p] && three[p]){
-                        print domain_lines[p] >> domains_out
+                print header > exons_out
+                for(p in exon_pairs){
+                    keep=1
+                    # Only pairs that appear in domains.csv are subject to the
+                    # 5'/3' coverage check; pairs outside domains.csv pass through
+                    # untouched, since they were never part of this validation.
+                    if(p in domain_pairs){
+                        if(!(five[p] && three[p])) keep=0
+                    }
+                    if(keep){
+                        print exon_lines[p] >> exons_out
                     } else {
+                        split(p,a,",")
                         if(!five[p])
                             printf "%s : transcript pair %s,%s missing 5%s exons\\n", file, a[1], a[2], apos
                         if(!three[p])
@@ -81,7 +89,6 @@ process FilterAgfusion_Jaffal {
                     }
                 }
             }' "\$domains" "\$exons" >> problematic_transcripts_report_jaffal.txt
-
     done
 
     """
@@ -136,33 +143,41 @@ process FilterAgfusion_LongGF {
         # ---- Case 3: both files present -> keep the directory, but strip out
         #      only the transcript-pair ROWS in domains.csv that lack full
         #      5'/3' exon coverage. exons.csv itself is left untouched. ----
-        domains_basename=\$(basename "\$domains")
+        exons_basename=\$(basename "\$exons")
 
-        awk -F',' -v file="\$exons" -v domains_out="\$dest/\$domains_basename" -v apos="'" '
-            # ---- First read domains.csv: remember every row, grouped by pair ----
+        awk -F',' -v file="\$exons" -v exons_out="\$dest/\$exons_basename" -v apos="'" '
+            # ---- First read domains.csv: remember which pairs are "expected" ----
             FNR==NR {
-                if(NR==1){ header=\$0; next }
+                if(NR==1) next
                 pair=\$3","\$4
                 domain_pairs[pair]=1
-                domain_lines[pair] = (pair in domain_lines) ? domain_lines[pair] ORS \$0 : \$0
                 next
             }
-            # ---- Now parse exons.csv ----
-            FNR==1 {next}
+            # ---- Now read exons.csv: remember every row, grouped by pair ----
+            FNR==1 { header=\$0; next }
             {
                 pair=\$3","\$4
+                exon_pairs[pair]=1
+                exon_lines[pair] = (pair in exon_lines) ? exon_lines[pair] ORS \$0 : \$0
                 if(pair in domain_pairs){
                     if(\$7 ~ /5 gene/) five[pair]=1
                     if(\$7 ~ /3 gene/) three[pair]=1
                 }
             }
             END{
-                print header > domains_out
-                for(p in domain_pairs){
-                    split(p,a,",")
-                    if(five[p] && three[p]){
-                        print domain_lines[p] >> domains_out
+                print header > exons_out
+                for(p in exon_pairs){
+                    keep=1
+                    # Only pairs that appear in domains.csv are subject to the
+                    # 5'/3' coverage check; pairs outside domains.csv pass through
+                    # untouched, since they were never part of this validation.
+                    if(p in domain_pairs){
+                        if(!(five[p] && three[p])) keep=0
+                    }
+                    if(keep){
+                        print exon_lines[p] >> exons_out
                     } else {
+                        split(p,a,",")
                         if(!five[p])
                             printf "%s : transcript pair %s,%s missing 5%s exons\\n", file, a[1], a[2], apos
                         if(!three[p])
@@ -170,8 +185,6 @@ process FilterAgfusion_LongGF {
                     }
                 }
             }' "\$domains" "\$exons" >> problematic_transcripts_report_longgf.txt
-
     done
-
     """
 }
