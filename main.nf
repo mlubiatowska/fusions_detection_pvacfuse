@@ -9,10 +9,12 @@ include { Jaffal } from './modules/jaffal.nf'
 include { LonggfPrep } from './modules/longgf.nf'
 include { Longgf } from './modules/longgf.nf'
 include { Consensus } from './modules/consensus.nf'
-include { AGFusion } from './modules/agfusions.nf'
-include { PvacFuse } from './modules/pvacfuse.nf'
+include { AGFusion_Jaffal } from './modules/agfusions_jaffal.nf'
+include { PvacFuse_Jaffal } from './modules/pvacfuse_jaffal.nf'
 include { AGFusion_LongGF } from './modules/agfusions_longgf.nf'
-include { PvacFuse_LongGF } from './modules/pvacfuse_longgf'
+include { PvacFuse_LongGF } from './modules/pvacfuse_longgf.nf'
+include { FilterAgfusion as FilterAgfusion_Jaffal } from './modules/filter_agfusion.nf'
+include { FilterAgfusion as FilterAgfusion_LongGF } from './modules/filter_agfusion.nf'
 
 workflow {
     main:
@@ -60,15 +62,17 @@ workflow {
         //Input into AGFusion and pvacfuse -for jaffal output 
         pvac_jaffal_ch = Consensus.out
             .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, jaffal_consensus_breakpoints)}
-        AGFusion(pvac_jaffal_ch)
-        jaffal_pvacfuse_input_ch = AGFusion.out.join(alleles_channel)
-        PvacFuse(jaffal_pvacfuse_input_ch)
+        AGFusion_Jaffal(pvac_jaffal_ch)
+        FilterAgfusion_Jaffal(AGFusion.out)
+        jaffal_pvacfuse_input_ch = FilterAgfusion_Jaffal.out.filtered.join(alleles_channel)
+        PvacFuse_Jaffal(jaffal_pvacfuse_input_ch)
 
         //Input into AGFusion and pvacfuse -for longgf output
         pvac_longgf_ch = Consensus.out
             .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, longgf_consensus_breakpoints) }
         AGFusion_LongGF(pvac_longgf_ch)
-        longgf_pvacfuse_input_ch = AGFusion_LongGF.out.join(alleles_channel)
+        FilterAgfusion_LongGF(AGFusion_LongGF.out)
+        longgf_pvacfuse_input_ch = FilterAgfusion_LongGF.out.filtered.join(alleles_channel)
         PvacFuse_LongGF(longgf_pvacfuse_input_ch)
         
     }
@@ -78,9 +82,11 @@ workflow {
     jaffal                = Jaffal.out
     longgf                = Longgf.out
     consensus             = Consensus.out
-    jaffal_agfusion       = AGFusion.out
+    jaffal_agfusion       = AGFusion_Jaffal.out
     longgf_agfusion       = AGFusion_LongGF.out
-    jaffal_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse.out : Channel.empty()
+    filtered_jaffal_agfusion  = FilterAgfusion_Jaffal.out
+    filtered_longgf_agfusion  = FilterAgfusion_LongGF.out
+    jaffal_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse_Jaffal.out : Channel.empty()
     longgf_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse_LongGF.out : Channel.empty()
 }
 
@@ -89,8 +95,10 @@ output {
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
     consensus           { path { name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
-    jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/jaffal}"}}
-    longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/longgf}"}}
+    jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/jaffal"}}
+    longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/longgf"}}
+    filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/jaffal/filtered" } }
+    filtered_longgf_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/longgf/filtered" } }
     jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
-    longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } }
+    longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } } 
 }

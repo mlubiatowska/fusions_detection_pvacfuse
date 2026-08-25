@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-process AGFusion {
+process AGFusion_Jaffal {
     cpus 1
     tag "${name}"  
 
@@ -8,7 +8,7 @@ process AGFusion {
     tuple val (name), path(consensus_breakpoints)
 
     output:
-    tuple val(name), path("agfusion")
+    tuple val(name), path("agfusion_jaffal")
 
     script:
     """
@@ -16,13 +16,13 @@ process AGFusion {
       -f ${consensus_breakpoints} \
       -a jaffa \
       -db ${params.db}  \
-      -o agfusion \
+      -o agfusion_jaffal \
       --middlestar \
       --noncanonical
 
     """
     stub:
     """
-    mkdir -p agfusion
+    mkdir -p agfusion_jaffal
     """
 }

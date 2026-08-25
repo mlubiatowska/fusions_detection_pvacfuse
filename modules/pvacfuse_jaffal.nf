@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 
-process PvacFuse {
+process PvacFuse_Jaffal {
     cpus 1
     tag "${name}"
 
     input:
-    tuple val(name), path(agfusion), path(hla_alleles)
+    tuple val(name), path(agfusion_jaffal), path(problematic_transcripts_report), path(missing_exons_report), path(hla_alleles)
 
     output:
     tuple val(name), path("${name}_fusion_neoag")
@@ -50,12 +50,11 @@ process PvacFuse {
     ' '${hla_alleles}' | sort -u | paste -sd "," - > "${name}_HLA_alleles.txt"
 
 
-    #running singularity in an example test set, where out6 is an emplty output file and pvacseq_example_data includes exmaple dataset provided by the pVACtools 
-    
+    #running singularity in an example test set, where out6 is an emplty output file and pvacseq_example_data includes exmaple dataset provided by the pVACtools
     HLA_ALLELES=\$(cat ${name}_HLA_alleles.txt)
 
     pvacfuse run \
-        ${agfusion} \
+        ${agfusion_jaffal} \
         ${name} \
         \${HLA_ALLELES} \
         all \

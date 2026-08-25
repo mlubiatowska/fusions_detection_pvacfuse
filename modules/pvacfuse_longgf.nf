@@ -5,7 +5,7 @@ process PvacFuse_LongGF {
     tag "${name}"
 
     input:
-    tuple val(name), path(agfusions_longgf), path(hla_alleles)
+    tuple val(name), path(agfusions_longgf), path(problematic_transcripts_report), path(missing_exons_report), path(hla_alleles)
 
     output:
     tuple val(name), path("${name}_fusion_neoag")
