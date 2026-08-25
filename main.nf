@@ -13,8 +13,8 @@ include { AGFusion_Jaffal } from './modules/agfusions_jaffal.nf'
 include { PvacFuse_Jaffal } from './modules/pvacfuse_jaffal.nf'
 include { AGFusion_LongGF } from './modules/agfusions_longgf.nf'
 include { PvacFuse_LongGF } from './modules/pvacfuse_longgf.nf'
-include { FilterAgfusion as FilterAgfusion_Jaffal } from './modules/filter_agfusion.nf'
-include { FilterAgfusion as FilterAgfusion_LongGF } from './modules/filter_agfusion.nf'
+include { FilterAgfusion_Jaffal } from './modules/filter_agfusion.nf'
+include { FilterAgfusion_LongGF } from './modules/filter_agfusion.nf'
 
 workflow {
     main:
@@ -95,10 +95,10 @@ output {
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
     consensus           { path { name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
-    jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/jaffal"}}
-    longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion/longgf"}}
-    filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/jaffal/" } }
-    filtered_longgf_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion/longgf/" } }
+    jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
+    longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
+    filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion" } }
+    filtered_longgf_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion" } }
     jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
     longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } } 
 }
