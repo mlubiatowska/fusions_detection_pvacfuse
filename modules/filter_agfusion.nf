@@ -1,5 +1,6 @@
 process FilterAgfusion {
-    tag "$name"
+    cpus 1
+    tag "${name}"
 
     input:
     tuple val(name), path(agfusion)
