@@ -42,7 +42,7 @@ process FilterAgfusion {
         #      5'/3' exon coverage. exons.csv itself is left untouched. ----
         domains_basename=\$(basename "\$domains")
 
-        awk -F',' -v file="\$exons" -v domains_out="\$dest/\$domains_basename" '
+        awk -F',' -v file="\$exons" -v domains_out="\$dest/\$domains_basename" -v apos="'" '
             # ---- First read domains.csv: remember every row, grouped by pair ----
             FNR==NR {
                 if(NR==1){ header=\$0; next }
@@ -68,9 +68,9 @@ process FilterAgfusion {
                         print domain_lines[p] >> domains_out
                     } else {
                         if(!five[p])
-                            printf "%s : transcript pair %s,%s missing 5'\'' exons\n", file, a[1], a[2]
+                            printf "%s : transcript pair %s,%s missing 5%s exons\\n", file, a[1], a[2], apos
                         if(!three[p])
-                            printf "%s : transcript pair %s,%s missing 3'\'' exons\n", file, a[1], a[2]
+                            printf "%s : transcript pair %s,%s missing 3%s exons\\n", file, a[1], a[2], apos
                     }
                 }
             }' "\$domains" "\$exons" >> problematic_transcripts_report.txt
