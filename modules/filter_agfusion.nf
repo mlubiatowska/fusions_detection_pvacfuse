@@ -10,7 +10,8 @@ process FilterAgfusion {
 
     script:
     """
-    AGFUSION=${agfusion}/*/
+    AGFUSION_DIR="${agfusion}"
+    AGFUSION="${agfusion}"/*/
     FILTERED_DIR=./agfusion_filtered
 
     mkdir -p "\$FILTERED_DIR"
@@ -25,13 +26,16 @@ process FilterAgfusion {
         domains=\$(ls "\$d"/*domains.csv 2>/dev/null)
         exons=\$(ls "\$d"/*exons.csv 2>/dev/null)
 
+        rel="\${d#\$AGFUSION_DIR/}"
+        rel="\${rel%/}
+
         # ---- Case 1: no exons.csv at all -> exclude the WHOLE directory ----
         if [ -z "\$exons" ]; then
             echo "Missing *exons.csv in: \$d" >> missing_exons_report.txt
             continue
         fi
 
-        dest="\$FILTERED_DIR/\$d"
+        dest="\$FILTERED_DIR/\$rel"
         mkdir -p "\$dest"
         cp -r "\$d"/. "\$dest"/
 
@@ -79,7 +83,6 @@ process FilterAgfusion {
             }' "\$domains" "\$exons" >> problematic_transcripts_report.txt
 
     done
-    shopt -u nullglob
 
     """
 }
