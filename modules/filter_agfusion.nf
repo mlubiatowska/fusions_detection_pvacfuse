@@ -27,7 +27,7 @@ process FilterAgfusion {
         exons=\$(ls "\$d"/*exons.csv 2>/dev/null)
 
         rel="\${d#\$AGFUSION_DIR/}"
-        rel="\${rel%/}
+        rel="\${rel%/}"
 
         # ---- Case 1: no exons.csv at all -> exclude the WHOLE directory ----
         if [ -z "\$exons" ]; then
