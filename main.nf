@@ -13,8 +13,8 @@ include { AGFusion_Jaffal } from './modules/agfusions_jaffal.nf'
 include { PvacFuse_Jaffal } from './modules/pvacfuse_jaffal.nf'
 include { AGFusion_LongGF } from './modules/agfusions_longgf.nf'
 include { PvacFuse_LongGF } from './modules/pvacfuse_longgf.nf'
-include { FilterAgfusion_Jaffal } from './modules/filter_agfusion.nf'
-include { FilterAgfusion_LongGF } from './modules/filter_agfusion.nf'
+include { FilterAgfusion_Jaffal } from './modules/filter_agfusion_jaffal_proteinfa.nf'
+include { FilterAgfusion_LongGF } from './modules/filter_agfusion_jaffal_proteinfa.nf'
 
 workflow {
     main:
