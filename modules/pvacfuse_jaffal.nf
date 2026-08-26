@@ -8,7 +8,7 @@ process PvacFuse_Jaffal {
     tuple val(name), path(agfusion_jaffal), path(hla_alleles)
 
     output:
-    tuple val(name), path("${name}_fusion_neoag_jaffal"), path("${name}_fusion_neoag_longgf")
+    tuple val(name), path("${name}_fusion_neoag_jaffal")
 
 
     script:

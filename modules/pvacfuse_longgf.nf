@@ -8,7 +8,7 @@ process PvacFuse_LongGF {
     tuple val(name), path(agfusions_longgf), path(problematic_transcripts_report), path(missing_exons_report), path(hla_alleles)
 
     output:
-    tuple val(name), path("${name}_fusion_neoag")
+    tuple val(name), path("${name}_fusion_neoag_longgf")
 
     script:
     """
@@ -59,7 +59,7 @@ process PvacFuse_LongGF {
         ${name} \
         \${HLA_ALLELES} \
         all \
-        ${name}_fusion_neoag \
+        ${name}_fusion_neoag_longgf \
         --percentile-threshold 2 \
         --iedb-install-directory /opt/iedb
 
@@ -67,6 +67,6 @@ process PvacFuse_LongGF {
     
     stub:
     """
-    mkdir -p ${name}_fusion_neoag
+    mkdir -p ${name}_fusion_neoag_longgf
     """
 }
