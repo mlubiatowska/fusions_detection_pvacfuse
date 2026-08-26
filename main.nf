@@ -73,7 +73,7 @@ workflow {
         AGFusion_LongGF(pvac_longgf_ch)
         FilterAgfusion_LongGF(AGFusion_LongGF.out)
         longgf_pvacfuse_input_ch = FilterAgfusion_LongGF.out.join(alleles_channel)
-        PvacFuse_LongGF(longgf_pvacfuse_input_ch)
+        PvacFuse_LongGF(PvacFuse_Jaffal.out, longgf_pvacfuse_input_ch)
         //testing if overlapping causes problems
 
         //filtered_ch = AGFusion_Jaffal.out.join(FilterAgfusion_LongGF.out)
