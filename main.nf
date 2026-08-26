@@ -104,6 +104,6 @@ output {
     longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
     //filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion" } }
     filtered_longgf_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion" } }
-    jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}" } }
-    longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}" } } 
+    jaffal_pvacfuse_neoag      { path { name, jaffal_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/jaffal" } }
+    longgf_pvacfuse_neoag      { path { name, longgf_pvacfuse_neoag                           -> "${name}/${params.pvacfuse_outdir}/longgf" } } 
 }
