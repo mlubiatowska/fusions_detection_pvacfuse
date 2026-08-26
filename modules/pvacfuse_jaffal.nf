@@ -5,7 +5,7 @@ process PvacFuse_Jaffal {
     tag "${name}"
 
     input:
-    tuple val(name), path(agfusion_jaffal), path(problematic_transcripts_report_jaffal), path(missing_exons_report_jaffal), path(agfusions_longgf), path(problematic_transcripts_report_longgf), path(missing_exons_report_longgf), path(hla_alleles)
+    tuple val(name), path(agfusion_jaffal), path(agfusions_longgf), path(problematic_transcripts_report_longgf), path(missing_exons_report_longgf), path(hla_alleles)
 
     output:
     tuple val(name), path("${name}_fusion_neoag_jaffal"), path("${name}_fusion_neoag_longgf")
