@@ -62,16 +62,6 @@ process PvacFuse_Jaffal {
         ${name}_fusion_neoag_jaffal \
         --percentile-threshold 2 \
         --iedb-install-directory /opt/iedb
-
-    pvacfuse run \
-        ${agfusions_longgf} \
-        ${name} \
-        \${HLA_ALLELES} \
-        all \
-        ${name}_fusion_neoag_longgf \
-        --percentile-threshold 2 \
-        --iedb-install-directory /opt/iedb
-
     """
     
     stub:
