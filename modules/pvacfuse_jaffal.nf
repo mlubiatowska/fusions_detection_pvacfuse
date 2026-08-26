@@ -5,10 +5,11 @@ process PvacFuse_Jaffal {
     tag "${name}"
 
     input:
-    tuple val(name), path(agfusion_jaffal), path(problematic_transcripts_report), path(missing_exons_report), path(hla_alleles)
+    tuple val(name), path(agfusion_jaffal), path(problematic_transcripts_report_jaffal), path(missing_exons_report_jaffal), path(agfusions_longgf), path(problematic_transcripts_report_longgf), path(missing_exons_report_longgf), path(hla_alleles)
 
     output:
-    tuple val(name), path("${name}_fusion_neoag")
+    tuple val(name), path("${name}_fusion_neoag_jaffal"), path("${name}_fusion_neoag_longgf")
+
 
     script:
     """
@@ -58,7 +59,16 @@ process PvacFuse_Jaffal {
         ${name} \
         \${HLA_ALLELES} \
         all \
-        ${name}_fusion_neoag \
+        ${name}_fusion_neoag_jaffal \
+        --percentile-threshold 2 \
+        --iedb-install-directory /opt/iedb
+
+    pvacfuse run \
+        ${agfusions_longgf} \
+        ${name} \
+        \${HLA_ALLELES} \
+        all \
+        ${name}_fusion_neoag_longgf \
         --percentile-threshold 2 \
         --iedb-install-directory /opt/iedb
 
