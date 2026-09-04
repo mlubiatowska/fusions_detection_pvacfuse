@@ -21,11 +21,6 @@ process Consensus {
         sapply(genes, function(g) paste(sort(g), collapse = ":"))
     }
 
-    normalize_pair_jaffal <- function(x) {
-        genes <- strsplit(x, "::")
-        sapply(genes, function(g) paste(sort(g), collapse = ":"))
-    }
-
     find_breakpoint_matches <- function(df1, df2, tolerance = 10, consensus_by = "fusion_norm") {
   
         df1 <- df1 |>
@@ -71,8 +66,9 @@ process Consensus {
 
     #reading and adjusting the format of jaffal and longgf results, filtering based on read count, and normalising gene pairs for comparison 
     jaffal <- read_csv("${jaffal_csv}") |>
+        mutate(`fusion genes` = str_replace_all(`fusion genes`, pattern = '::', replacement = ':')) |>
         filter(!(classification %in% c('PotentialTransSplicing', 'PotentialReadThrough'))) |>
-        mutate(fusion_norm = normalize_pair_jaffal(`fusion genes`)) |>
+        mutate(fusion_norm = normalize_pair(`fusion genes`)) |>
         mutate_at(vars(base1, base2), as.numeric) |>
         filter(`spanning reads` > ${params.min_read_count})
 
