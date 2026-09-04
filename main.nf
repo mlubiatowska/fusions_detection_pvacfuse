@@ -80,9 +80,9 @@ workflow {
     jaffal                = Jaffal.out
     longgf                = Longgf.out
     consensus             = Consensus.out
-    jaffal_agfusion       = AGFusion_Jaffal.out
-    longgf_agfusion       = AGFusion_LongGF.out
-    filtered_longgf_agfusion  = FilterAgfusion_LongGF.out
+    jaffal_agfusion       = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? AGFusion_Jaffal.out : Channel.empty()
+    longgf_agfusion       = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? AGFusion_LongGF.out : Channel.empty() 
+    filtered_longgf_agfusion  = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? FilterAgfusion_LongGF.out : Channel.empty()
     jaffal_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse_Jaffal.out : Channel.empty()
     longgf_pvacfuse_neoag        = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? PvacFuse_LongGF.out : Channel.empty()
 }
