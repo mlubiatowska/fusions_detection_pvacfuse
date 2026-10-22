@@ -91,7 +91,8 @@ process Consensus {
     #reading the file with recurrent fusions from previous literature 
     nonmalignant_fusions <- read_csv("${params.nonmalignant_fusions_path}") |>
         mutate(fusion = paste0(up_gene, ':', dw_gene)) |>
-        mutate(fusion_norm = normalize_pair(fusion))
+        filter_samegene(fusion) |>
+        mutate(fusion_norm = normalize_pair(fusion_norm_ig))
 
     #reading and adjusting the format of jaffal and longgf results, filtering based on read count, and normalising gene pairs for comparison 
     jaffal <- read_csv("${jaffal_csv}") |>
@@ -161,9 +162,11 @@ process Consensus {
             names_sep = ""
         ) |>
         rename(fusion_gene = info1) |>
-        mutate(fusion_norm = normalize_pair(fusion_gene)) |> 
+        filter_samegene(`fusion genes`) |>
+        mutate(fusion_norm = normalize_pair(fusion_norm_ig)) |> 
         filter(fusion_norm %in% jaffal_breakpoint_consensus\$fusion_norm) |>
         select(!c(fusion_norm)) |> 
+        filter(read_count >= ${params.min_read_count}) |>
         unite(
             col = "X1",
             gf:fusion_gene,
@@ -172,8 +175,7 @@ process Consensus {
         unite(
             col = "X1",
             everything(),
-            sep = " ") |>
-        filter(read_count >= ${params.min_read_count})
+            sep = " ") 
     
     jaffal_breakpoint_consensus <- jaffal_breakpoint_consensus |> select(!c(fusion_norm))
 
