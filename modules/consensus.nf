@@ -162,7 +162,7 @@ process Consensus {
             names_sep = ""
         ) |>
         rename(fusion_gene = info1) |>
-        filter_samegene(`fusion genes`) |>
+        filter_samegene(fusion_gene) |>
         mutate(fusion_norm = normalize_pair(fusion_norm_ig)) |> 
         filter(fusion_norm %in% jaffal_breakpoint_consensus\$fusion_norm) |>
         select(!c(fusion_norm)) |> 
