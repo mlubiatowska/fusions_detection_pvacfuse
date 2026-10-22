@@ -21,6 +21,36 @@ process Consensus {
         sapply(genes, function(g) paste(sort(g), collapse = ":"))
     }
 
+    condense_ig <- function(g) {
+        case_when(
+            str_detect(g, "^IGH[VDJ][0-9I]|^IGH(M|D|E|G[1-4P]|A[12]|EP[12])$") ~ "IGH",
+            str_detect(g, "^IGK[VJ][0-9]|^IGK(C|DEL)$")                        ~ "IGK",
+            str_detect(g, "^IGL[VJ][0-9]|^IGLC[0-9]$|^IGLL[0-9]$")             ~ "IGL",
+            TRUE ~ g                                                            # non-IG genes unchanged
+        )
+        }
+
+    condense_ig_pair <- function(x, sep = ":+") {
+        map_chr(str_split(x, sep), \(g) {
+            if (all(is.na(g))) return(NA_character_)
+            paste(sort(condense_ig(g)), collapse = ":")
+        })
+        }
+
+    filter_samegene <- function(fusion_df, fusion_col) {
+        fusion_df |>
+            mutate(fusion_norm_ig = condense_ig_pair(pick({{ fusion_col }})[[1]])) |>
+            separate( fusion_norm_ig,
+            into   = c("gene1", "gene2"),
+            sep    = ":",
+            remove = FALSE,
+            extra  = "merge",
+            fill   = "right" ) |>
+            mutate(same_gene = gene1 == gene2) |>
+            filter(!same_gene | is.na(same_gene)) |>   # keep rows with a missing partner; drop identical pairs
+            select(-same_gene)
+        }
+
     find_breakpoint_matches <- function(df1, df2, tolerance = 10, consensus_by = "fusion_norm") {
   
         df1 <- df1 |>
@@ -29,7 +59,6 @@ process Consensus {
                 high_break = max(base1, base2)) |>
             ungroup() |>
             rename_with(~ paste0(.x, "_1"))
-            
             
         df2 <- df2 |>
             rowwise() |>
@@ -68,9 +97,9 @@ process Consensus {
     jaffal <- read_csv("${jaffal_csv}") |>
         mutate(`fusion genes` = str_replace_all(`fusion genes`, pattern = '::', replacement = ':')) |>
         filter(!(classification %in% c('PotentialTransSplicing', 'PotentialReadThrough'))) |>
-        mutate(fusion_norm = normalize_pair(`fusion genes`)) |>
-        mutate_at(vars(base1, base2), as.numeric) |>
-        filter(`spanning reads` > ${params.min_read_count})
+        filter_samegene(`fusion genes`) |>
+        mutate(fusion_norm = normalize_pair(fusion_norm_ig)) |>
+        mutate_at(vars(base1, base2), as.numeric) 
 
     longgf_in <- read_tsv("${longgf_log}", col_names = FALSE) 
 
@@ -98,9 +127,9 @@ process Consensus {
         )
 
     longgf <- longgf |>
-        mutate(fusion_norm = normalize_pair(`fusion genes`)) |>
-        mutate_at(vars(base1, base2), as.numeric) |>
-        filter(read_count > ${params.min_read_count})
+        filter_samegene(`fusion genes`) |>
+        mutate(fusion_norm = normalize_pair(fusion_norm_ig)) |>
+        mutate_at(vars(base1, base2), as.numeric) 
 
     #generating list of gene partenrs in consensus between the 2 tools
     consensus <- intersect(jaffal\$fusion_norm, longgf\$fusion_norm)
@@ -116,7 +145,8 @@ process Consensus {
         filter(!(fusion_norm %in% nonmalignant_fusions\$fusion_norm)) |>
         filter(fusion_norm %in% consensus) |>
         find_breakpoint_matches(longgf, tolerance = ${params.breakpoint_tolerance}, consensus_by = "fusion_norm") |>
-        filter(classification == 'HighConfidence')
+        filter(classification == 'HighConfidence') |>
+        filter(`spanning reads` >= ${params.min_read_count})
     
     longgf_breakpoint_consensus <- longgf_in |>
         filter(grepl("^GF", X1)) |>
@@ -142,7 +172,8 @@ process Consensus {
         unite(
             col = "X1",
             everything(),
-            sep = " ")
+            sep = " ") |>
+        filter(read_count >= ${params.min_read_count})
     
     jaffal_breakpoint_consensus <- jaffal_breakpoint_consensus |> select(!c(fusion_norm))
 
