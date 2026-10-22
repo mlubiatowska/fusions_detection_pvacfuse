@@ -23,19 +23,19 @@ process Consensus {
 
     condense_ig <- function(g) {
         case_when(
-            str_detect(g, "^IGH[VDJ][0-9I]|^IGH(M|D|E|G[1-4P]|A[12]|EP[12])$") ~ "IGH",
-            str_detect(g, "^IGK[VJ][0-9]|^IGK(C|DEL)$")                        ~ "IGK",
-            str_detect(g, "^IGL[VJ][0-9]|^IGLC[0-9]$|^IGLL[0-9]$")             ~ "IGL",
+            str_detect(g, "^IGH[VDJ][0-9I]|^IGH(M|D|E|G[1-4P]|A[12]|EP[12])\$") ~ "IGH",
+            str_detect(g, "^IGK[VJ][0-9]|^IGK(C|DEL)\$")                        ~ "IGK",
+            str_detect(g, "^IGL[VJ][0-9]|^IGLC[0-9]\$|^IGLL[0-9]\$")             ~ "IGL",
             TRUE ~ g                                                            # non-IG genes unchanged
         )
-        }
+    }
 
     condense_ig_pair <- function(x, sep = ":+") {
-        map_chr(str_split(x, sep), \(g) {
+        map_chr(str_split(x, sep), function(g) {
             if (all(is.na(g))) return(NA_character_)
             paste(sort(condense_ig(g)), collapse = ":")
         })
-        }
+    }
 
     filter_samegene <- function(fusion_df, fusion_col) {
         fusion_df |>
@@ -49,7 +49,7 @@ process Consensus {
             mutate(same_gene = gene1 == gene2) |>
             filter(!same_gene | is.na(same_gene)) |>   # keep rows with a missing partner; drop identical pairs
             select(-same_gene)
-        }
+    }
 
     find_breakpoint_matches <- function(df1, df2, tolerance = 10, consensus_by = "fusion_norm") {
   
