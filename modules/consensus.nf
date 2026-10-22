@@ -161,15 +161,16 @@ process Consensus {
             delim = " ",
             names_sep = ""
         ) |>
-        rename(fusion_gene = info1) |>
-        filter_samegene(fusion_gene) |>
+        rename("fusion genes" = info1) |>
+        rename("read_count" = info2) |>
+        filter_samegene(`fusion genes`) |>
         mutate(fusion_norm = normalize_pair(fusion_norm_ig)) |> 
         filter(fusion_norm %in% jaffal_breakpoint_consensus\$fusion_norm) |>
         select(!c(fusion_norm)) |> 
         filter(read_count >= ${params.min_read_count}) |>
         unite(
             col = "X1",
-            gf:fusion_gene,
+            gf:`fusion genes`,
             sep = "\t"
         ) |>
         unite(
