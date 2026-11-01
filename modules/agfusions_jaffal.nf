@@ -5,7 +5,7 @@ process AGFusion_Jaffal {
     tag "${name}"  
 
     input:
-    tuple val (name), path(consensus_breakpoints)
+    tuple val (name), path(jaffal_consensus_read_and_classification_filtered_NOnonmalignant)
 
     output:
     tuple val(name), path("agfusion_jaffal")
@@ -13,7 +13,7 @@ process AGFusion_Jaffal {
     script:
     """
     agfusion batch \
-      -f ${consensus_breakpoints} \
+      -f ${jaffal_consensus_read_and_classification_filtered_NOnonmalignant} \
       -a jaffa \
       -db ${params.db}  \
       -o agfusion_jaffal \

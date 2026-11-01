@@ -5,7 +5,7 @@ process AGFusion_LongGF {
     tag "${name}"  
 
     input:
-    tuple val (name), path(longgf_consensus_breakpoints)
+    tuple val (name), path(longgf_consensus_read_and_classification_filtered_NOnonmalignant)
 
     output:
     tuple val(name), path("agfusion_longgf")
@@ -13,7 +13,7 @@ process AGFusion_LongGF {
     script:
     """
     agfusion batch \
-      -f ${longgf_consensus_breakpoints} \
+      -f ${longgf_consensus_read_and_classification_filtered_NOnonmalignant} \
       -a longgf \
       -db ${params.db}  \
       -o agfusion_longgf \

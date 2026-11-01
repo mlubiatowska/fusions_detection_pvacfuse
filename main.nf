@@ -60,18 +60,21 @@ workflow {
 
         //Input into AGFusion and pvacfuse -for jaffal output 
         pvac_jaffal_ch = Consensus.out
-            .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, jaffal_consensus_breakpoints)}
+            .map{ name, jaffal_consensus_NOnonmalignant,jaffal_consensus_read_and_classification_filtered_NOnonmalignant, jaffal_breakpoint_consensus_NOnonmalignant, longgf_consensus_NOnonmalignant, longgf_consensus_read_and_classification_filtered_NOnonmalignant, longgf_breakpoint_consensus_NOnonmalignant -> tuple(name, jaffal_consensus_read_and_classification_filtered_NOnonmalignant)}
         AGFusion_Jaffal(pvac_jaffal_ch)
         jaffal_pvacfuse_input_ch = AGFusion_Jaffal.out.join(alleles_channel)
         PvacFuse_Jaffal(jaffal_pvacfuse_input_ch)
 
         //Input into AGFusion and pvacfuse -for longgf output
         pvac_longgf_ch = Consensus.out
-            .map{ name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints -> tuple(name, longgf_consensus_breakpoints) }
+            .map{ name, jaffal_consensus_NOnonmalignant,jaffal_consensus_read_and_classification_filtered_NOnonmalignant, jaffal_breakpoint_consensus_NOnonmalignant, longgf_consensus_NOnonmalignant, longgf_consensus_read_and_classification_filtered_NOnonmalignant, longgf_breakpoint_consensus_NOnonmalignant -> tuple(name, longgf_consensus_read_and_classification_filtered_NOnonmalignant) }
         AGFusion_LongGF(pvac_longgf_ch)
         FilterAgfusion_LongGF(AGFusion_LongGF.out)
-        longgf_pvacfuse_input_ch = FilterAgfusion_LongGF.out.join(alleles_channel)
-        PvacFuse_LongGF(PvacFuse_Jaffal.out, longgf_pvacfuse_input_ch)
+        longgf_pvacfuse_input_ch = FilterAgfusion_LongGF.out
+            .join(alleles_channel)
+            .join(PvacFuse_Jaffal.out.map { row -> tuple(row[0], true) })  // wait for this sample's JAFFAL run
+            .map { row -> row[0..-2] }                                      // drop the 'true' again
+        PvacFuse_LongGF(longgf_pvacfuse_input_ch)
         
     }
 
@@ -91,7 +94,7 @@ output {
 
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
-    consensus           { path { name, jaffal_consensus, jaffal_consensus_breakpoints, longgf_consensus_breakpoints         -> "${name}/${params.consensus_outdir}" } }
+    consensus           { path { name, jaffal_consensus_NOnonmalignant,jaffal_consensus_read_and_classification_filtered_NOnonmalignant, jaffal_breakpoint_consensus_NOnonmalignant, longgf_consensus_NOnonmalignant, longgf_consensus_read_and_classification_filtered_NOnonmalignant, longgf_breakpoint_consensus_NOnonmalignant       -> "${name}/${params.consensus_outdir}" } }
     jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
     longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
     //filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion" } }

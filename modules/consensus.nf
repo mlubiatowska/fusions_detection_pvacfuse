@@ -7,7 +7,7 @@ process Consensus {
     tuple val(name), path(jaffal_csv), path(longgf_log)
 
     output:
-    tuple val(name), path("jaffal_consensus_NOnonmalignant.csv"), path("jaffal_breakpoint_consensus_NOnonmalignant.csv"), path("longgf_breakpoint_consensus_NOnonmalignant.csv")
+    tuple val(name), path("jaffal_consensus_NOnonmalignant.csv"), path("jaffal_consensus_read_and_classification_filtered_NOnonmalignant.csv"), path("jaffal_breakpoint_consensus_NOnonmalignant.csv"), path("longgf_consensus_NOnonmalignant.csv"), path("longgf_consensus_read_and_classification_filtered_NOnonmalignant.csv"), path("longgf_breakpoint_consensus_NOnonmalignant.csv")
 
     script:
     """
@@ -47,6 +47,7 @@ process Consensus {
             select(-same_gene)
     }
 
+    #this function will fnd JAFFAL fusions that have a LongGF fusion in with a breakpoint in consensus within given bp distance (tolerance) 
     find_breakpoint_matches <- function(df1, df2, tolerance = 10, consensus_by = "fusion_norm") {
         df1 <- df1 |>
             rowwise() |>
@@ -82,40 +83,54 @@ process Consensus {
         mutate(fusion = paste0(up_gene, ':', dw_gene)) |>
         filter_samegene(fusion) 
 
-    #reading jaffal output, filtering same gene fusions, and normalising gene pairs for comparison
+    #reading JAFFAL output, filtering same gene fusions, and normalising gene pairs for comparison
     jaffal <- read_csv("${jaffal_csv}") |>
         mutate(`fusion genes` = str_replace_all(`fusion genes`, pattern = '::', replacement = ':')) |>
         filter(!(classification %in% c('PotentialTransSplicing', 'PotentialReadThrough'))) |>
         filter_samegene(`fusion genes`) |>
         mutate_at(vars(base1, base2), as.numeric) 
+    
+    # read every GF / SumGF line and pair them with a shared fusion_id - this will be used later in breakpoint-consensus filtering 
+    longgf_in <- tibble(X1 = read_lines("${longgf_log}")) |>
+      filter(str_detect(X1, "^(GF|SumGF)\t")) |>
+      mutate(type      = str_extract(X1, "^[^\t]+"),
+             genes = str_match(X1, "^[^\t]+\t([^ ]+)")[, 2],
+             fusion_id = cumsum(type == "GF")) 
 
-    #reading LongGF output
-    longgf_in <- read_tsv("${longgf_log}", col_names = FALSE) 
+    # sanity check: each id has exactly one GF and one SumGF, with the same gene pair
+    pair_check <- longgf_in |>
+      group_by(fusion_id) |>
+      summarise(n_gf  = sum(type == "GF"),
+                n_sum = sum(type == "SumGF"),
+                same  = n_distinct(genes) == 1)
+    stopifnot(all(pair_check\$n_gf == 1), all(pair_check\$n_sum == 1), all(pair_check\$same))
+    
+    longgf_in <- longgf_in |> select(!c(genes, type))
 
-    #formating LongGF tibble using only rows starting with "SumGF", for consensus calling
+    #formatting LongGF tibble using only rows starting with "SumGF", for consensus calling
     longgf <- longgf_in |>
-        filter(grepl("SumGF", X1)) |>
-        separate(
-            col = X1,
-            into = c("sumgf", "info"),
-            sep = "\t") |>
-        separate(
-            col = info,
-            into = c("fusion genes", "read_count", "chr1", "chr2"),
-            sep = " ") |>
-        separate(
-            col = chr1,
-            into = c("chrom1", "base1"),
-            sep = ":") |>
-        separate(
-            col = chr2,
-            into = c("chrom2", "base2"),
-            sep = ":")
+      filter(grepl("SumGF", X1)) |>
+      separate(col = X1, into = c("sumgf", "info"), sep = "\t") |>
+      separate(col = info, into = c("fusion genes", "read_count", "chr1", "chr2"), sep = " ") |>
+      separate(col = chr1, into = c("chrom1", "base1"), sep = ":") |>
+      separate(col = chr2, into = c("chrom2", "base2"), sep = ":")
 
     #In LongGF SumGF tibble filtering same gene fusions, and normalising gene pairs for comparison
     longgf <- longgf |>
         filter_samegene(`fusion genes`) |>
-        mutate_at(vars(base1, base2), as.numeric) 
+      mutate(across(c(read_count, base1, base2), as.numeric))
+    
+    longgf_GF <- longgf_in |>
+      filter(grepl("^GF", X1)) |>
+      separate(col = X1, into = c("gf", "info"), sep = "\t") |>
+      separate_wider_delim(cols = info, delim = " ", names_sep = "") |>
+      rename("fusion genes" = info1) |>
+      rename("read_count" = info2) |>
+      filter_samegene(`fusion genes`)
+    
+    ##############################################################
+    #################  gene name-based filtering #################
+    ##############################################################
 
     #generating list of gene partners in consensus between the 2 tools
     consensus <- intersect(jaffal\$fusion_norm, longgf\$fusion_norm)
@@ -123,49 +138,77 @@ process Consensus {
     #filtering out fusions recurrent in normal tissues genes and keeping only fusions are in consensus (based on gene fusion pairs names)
     jaffal_consensus <- jaffal |>
         filter(!(fusion_norm %in% nonmalignant_fusions\$fusion_norm)) |>
-        filter(fusion_norm %in% consensus) |>
-        select(!c(fusion_norm, gene1, gene2))
+        filter(fusion_norm %in% consensus)  #selecting only fusion in consensus based on gene names
+
+    #formatting LongGF tibble using rows starting with "GF" to use further as input to AGFusion annotator, and filtering based on gene name consensus
+    longgf_consensus <- longgf_GF |>
+      filter(fusion_norm %in% jaffal_consensus\$fusion_norm) |> #filtering only fusion in consensus based on gene names
+      select(!c(fusion_norm, gene1, gene2, fusion_id)) |> 
+      unite(col = "X1", gf:`fusion genes`, sep = "\t") |>
+      unite(col = "X1", everything(), sep = " ") 
     
-    #filtering genes that are in consensus based on gene fusion pairs names as well as breakpoint distance between tools, and filteting based on spanning reads
-    jaffal_breakpoint_consensus <- jaffal |>
-        filter(!(fusion_norm %in% nonmalignant_fusions\$fusion_norm)) |>
-        filter(fusion_norm %in% consensus) |>
-        find_breakpoint_matches(longgf, tolerance = ${params.breakpoint_tolerance}, consensus_by = "fusion_norm") |>
+    ##############################################################
+    ##### read, HighConfidence and gene name-based filtering #####
+    ##############################################################
+    
+    #JAFFAL: HighConfidence, enough spanning reads, not a known non-malignant fusion
+    jaffal_filtered <- jaffal |>
         filter(classification == 'HighConfidence') |>
-        filter(`spanning reads` >= ${params.min_read_count})
+        filter(`spanning reads` >= ${params.min_read_count}) |>
+        filter(!(fusion_norm %in% nonmalignant_fusions\$fusion_norm))
+
+    #LongGF: enough supporting reads (needs read_count converted to numeric in `longgf`)
+    longgf_read_filtered <- longgf |> filter(read_count >= ${params.min_read_count})
     
+    consensus_filtered <- intersect(jaffal_filtered\$fusion_norm, longgf_read_filtered\$fusion_norm)
+
+    jaffal_consensus_filtered <- jaffal_filtered |>
+      filter(fusion_norm %in% consensus_filtered)
+
+    ids_consensus_filtered <- longgf_read_filtered |>
+    filter(fusion_norm %in% consensus_filtered) |>
+      pull(fusion_id)
+    
+    longgf_consensus_filtered <- longgf_GF |>
+      filter(fusion_id %in% ids_consensus_filtered) |>
+      select(!c(fusion_norm, gene1, gene2, fusion_id)) |>
+      unite(col = "X1", gf:`fusion genes`, sep = "\t") |>
+      unite(col = "X1", everything(), sep = " ")
+    
+    ##############################################################
+    ################# breakpoint-based filtering #################
+    ##############################################################
+    #filtering genes that are in consensus based on gene fusion pairs names as well as breakpoint distance between tools, and filtering based on spanning reads
+    jaffal_breakpoint_consensus <- jaffal_filtered |>
+      find_breakpoint_matches(longgf_read_filtered, tolerance = ${params.breakpoint_tolerance}, consensus_by = "fusion_norm")
+       
     #formatting LongGF tibble using rows starting with "GF" to use further as input to AGFusion annotator, and filtering based on breakpoint consensus
-    longgf_breakpoint_consensus <- longgf_in |>
-        filter(grepl("^GF", X1)) |>
-        separate(
-            col = X1,
-            into = c("gf", "info"),
-            sep = "\t") |>
-        separate_wider_delim(
-            cols = info,
-            delim = " ",
-            names_sep = "") |>
-        rename("fusion genes" = info1) |>
-        rename("read_count" = info2) |>
-        filter_samegene(`fusion genes`) |>
-        filter(fusion_norm %in% jaffal_breakpoint_consensus\$fusion_norm) |>
-        select(!c(fusion_norm, gene1, gene2)) |> 
-        filter(read_count >= ${params.min_read_count}) |>
-        unite(
-            col = "X1",
-            gf:`fusion genes`,
-            sep = "\t") |>
-        unite(
-            col = "X1",
-            everything(),
-            sep = " ") 
+    ids_breakpoint <- longgf_read_filtered |>
+      find_breakpoint_matches(jaffal_breakpoint_consensus, tolerance = ${params.breakpoint_tolerance}, consensus_by = "fusion_norm") |>
+      pull(fusion_id)
+    
+    longgf_breakpoint_consensus <- longgf_GF |> 
+        filter(fusion_id %in% ids_breakpoint) |> 
+        select(!c(fusion_norm, gene1, gene2, fusion_id)) |> 
+        unite(col = "X1", gf:`fusion genes`, sep = "\t") |>
+        unite(col = "X1", everything(), sep = " ") 
     
     jaffal_breakpoint_consensus <- jaffal_breakpoint_consensus |> select(!c(fusion_norm, gene1, gene2))
-
+    
+    jaffal_consensus <- jaffal_consensus |> select(!c(fusion_norm, gene1, gene2))
+    
+    jaffal_consensus_filtered <- jaffal_consensus_filtered |> select(!c(fusion_norm, gene1, gene2))
+    
     write_csv(jaffal_consensus, 'jaffal_consensus_NOnonmalignant.csv')
+
+    write_csv(jaffal_consensus_filtered, 'jaffal_consensus_read_and_classification_filtered_NOnonmalignant.csv')
 
     write_csv(jaffal_breakpoint_consensus, 'jaffal_breakpoint_consensus_NOnonmalignant.csv')
 
+    write_csv(longgf_consensus, 'longgf_consensus_NOnonmalignant.csv')
+
+    write_csv(longgf_consensus_filtered, 'longgf_consensus_read_and_classification_filtered_NOnonmalignant.csv')
+    
     write_csv(longgf_breakpoint_consensus, 'longgf_breakpoint_consensus_NOnonmalignant.csv')
 
     """
@@ -173,6 +216,9 @@ process Consensus {
     """
     touch jaffal_consensus_NOnonmalignant.csv
     touch jaffal_breakpoint_consensus_NOnonmalignant.csv
+    touch jaffal_consensus_read_and_classification_filtered_NOnonmalignant.csv
+    touch longgf_consensus_NOnonmalignant.csv
+    touch longgf_consensus_read_and_classification_filtered_NOnonmalignant.csv
     touch longgf_breakpoint_consensus_NOnonmalignant.csv
     """
 }
