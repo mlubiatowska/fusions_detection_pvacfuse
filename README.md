@@ -1,8 +1,9 @@
 # Fusion Gene consensus calling and neoantigen prediction
+## This branch changes JAFFAL script and config file to run with T2T reference 
 ## Pipeline for fusion calling in myeloma samples
 - In the future this will be followed by filtering and neoantigen prediciton from the consensus-called fusions.
 - currently only working for fusion calling and consensus, using JAFFAL and LongGF
-- requires local nextflow.config with correct pathways 
+- requires local nextflow.config with correct pathways
 
 ## Running the pipeline 
 ### Command
