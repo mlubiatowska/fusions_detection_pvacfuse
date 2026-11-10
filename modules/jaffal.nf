@@ -13,7 +13,7 @@ process Jaffal {
 
     script:
     """
-    bpipe run /JAFFA/JAFFAL.groovy ${rna_fastq}
+    bpipe run -p genome=hs1 -p annotation=catLiftOffGenesV1 /JAFFA/JAFFAL.groovy ${rna_fastq}
     """
     stub: 
     """
