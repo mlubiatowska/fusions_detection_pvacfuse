@@ -1,6 +1,8 @@
 # Fusion Gene consensus calling and neoantigen prediction
 ## Pipeline for fusion calling in myeloma samples
 
+### This version incorporates CTAT-LR for consensus calling. Consensus is called when fusion is dected by any 2 of 3 (CTAT-LR, JAFFAL, LongGF)
+
 ## Running the pipeline 
 ### Command
 ```
@@ -12,11 +14,10 @@ nextflow run https://github.com/mlubiatowska/fusions_detection_pvacfuse.git -r m
     --breakpoint_tolerance 3 \
     --consensus_outdir consensus_ensembl115 \
     --nonmalignant_fusions_path fusions.csv \
-    --include_pvacfuse \
-    --pvacfuse_outdir pvacfuse \
     -c <path to custom config file>
 
 ```
+
 ### Parameters:
 ```
 --input: csv file with data for all sampes (no header). Earch row should be 1 sample and must contain sample_name, unfiltered_rna_bam, rna_fastq, hla_alleles (this order) (required)
@@ -25,16 +26,23 @@ nextflow run https://github.com/mlubiatowska/fusions_detection_pvacfuse.git -r m
 --breakpoint_tolerance: maximum distance between breakpoint in JAFFAL and LongGF (testing with 5) (required)
 --consensus_outdir: name of directories that contain consensus output (will be saved under directory with sample name) (required)
 --nonmalignant_fusions_path: path to recurrent non-malignant fusions to be filtered out (downloaded from Babiceanu et al Nucleic Acids Res 2016) (required)
---include_pvacfuse: OPTIONAL argument to run AGFusion (fusion annotation) and pVACfuse (neoantigen prediction). Can be added after fusion prediction has been run using nextflow parameter 
---pvacfuse_outdir: OPTIONAL (required with option include_pvacfuse) name of directories that contain pvafuse output (will be saved under directory with sample name)
+!--include_pvacfuse: OPTIONAL argument to run AGFusion (fusion annotation) and pVACfuse (neoantigen prediction). Can be added after fusion prediction has been run using nextflow parameter 
+!--pvacfuse_outdir: OPTIONAL (required with option include_pvacfuse) name of directories that contain pvafuse output (will be saved under directory with sample name)
 -c: path to nextflow.config
 ```
+Parameters that are not currently available, becuase CTAT-LR output has not been synchronised with pVACFuse 
+```
+--include_pvacfuse
+--pvacfuse_outdir
+```
+This version does not output AGFusion annotation for CTAT-LR due to lack of compatibility between tools - this can be overcome later.
 
 ## Additional info about the pipeline 
 ### Tools 
 Consensus called based on gene names and their order in fusion candidates. Fusion calling using:
 - JAFFAL (long read version of JAFFA) v2.5 with GENCODE v49 database
 - LongGF v0.1.2 with gencode.v49.chr_patch_hapl_scaff.annotation.gtf,
+- CTAT-LR v1.6.1 - currently with gencode v44 - custom library for version 49 is in the making 
 - AGFusion with Ensembl release 115 database (loaded with SciPy-bundle/2023.11-gfbf-2023b)
 - pVACtools v6.0.5
 - SAMtools/1.11 (for name-sorting the BAM files for LongGF input)

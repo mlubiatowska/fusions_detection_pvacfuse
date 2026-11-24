@@ -8,6 +8,7 @@ nextflow.enable.dsl     = 2
 include { Jaffal } from './modules/jaffal.nf'
 include { LonggfPrep } from './modules/longgf.nf'
 include { Longgf } from './modules/longgf.nf'
+include { CTAT_LR } from './modules/ctat_lr.nf'
 include { Consensus } from './modules/consensus.nf'
 include { AGFusion_Jaffal } from './modules/agfusions_jaffal.nf'
 include { PvacFuse_Jaffal } from './modules/pvacfuse_jaffal.nf'
@@ -37,6 +38,10 @@ workflow {
     fastq_channel = input_data
         .map{ name, unfiltered_rna_bam, rna_fastq, hla_alleles -> tuple(name, rna_fastq) }
 
+    // Channel 2a: name, RNA-seq FASTQ - needed for CTAT_LR
+    fastq_channel2 = input_data
+        .map{ name, unfiltered_rna_bam, rna_fastq, hla_alleles -> tuple(name, rna_fastq) }
+
     //Channel 3: name, hla_alleles
     alleles_channel = input_data
         .map{ name, unfiltered_rna_bam, rna_fastq, hla_alleles -> tuple(name, hla_alleles)}
@@ -50,8 +55,12 @@ workflow {
 
     Longgf(LonggfPrep.out)
 
+    CTAT_LR(fastq_channel2)
+
     //find consensus between outputs, and filter out only consensus call from within Longgf (or Jaffal) output
-    fusion_output_ch = Jaffal.out.join(Longgf.out)
+    fusion_output_ch1 = Jaffal.out.join(Longgf.out)
+
+    fusion_output_ch = fusion_output_ch1.join(CTAT_LR.out)
 
     Consensus(fusion_output_ch)
 
@@ -94,7 +103,7 @@ output {
 
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
-    consensus           { path { name, jaffal_consensus_NOnonmalignant,jaffal_consensus_read_and_classification_filtered_NOnonmalignant, jaffal_breakpoint_consensus_NOnonmalignant, longgf_consensus_NOnonmalignant, longgf_consensus_read_and_classification_filtered_NOnonmalignant, longgf_breakpoint_consensus_NOnonmalignant       -> "${name}/${params.consensus_outdir}" } }
+    consensus           { path { name, jaffal_consensus_NOnonmalignant,jaffal_consensus_read_and_classification_filtered_NOnonmalignant, jaffal_breakpoint_consensus_NOnonmalignant, longgf_consensus_NOnonmalignant, longgf_consensus_read_and_classification_filtered_NOnonmalignant, longgf_breakpoint_consensus_NOnonmalignant, ctat_consensus_NOnonmalignant, ctat_consensus_read_and_classification_filtered_NOnonmalignant, ctat_breakpoint_consensus_NOnonmalignant       -> "${name}/${params.consensus_outdir}" } }
     jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
     longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
     //filtered_jaffal_agfusion    { path { name, agfusion_filtered, problematic_transcripts_report, missing_exons_report -> "${name}/agfusion" } }
