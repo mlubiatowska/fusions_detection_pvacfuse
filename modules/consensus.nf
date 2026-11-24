@@ -198,7 +198,7 @@ ctat <- read_tsv("${ctat_tsv}") |>
 
     # for every call, count how many OTHER tools have a matching breakpoint
     support <- map_dfr(combn(names(bp), 2, simplify = FALSE), function(p) {
-        m <- match_pair(bp[[p[1]]], bp[[p[2]]], params.breakpoint_tolerance)
+        m <- match_pair(bp[[p[1]]], bp[[p[2]]], ${params.breakpoint_tolerance})
         bind_rows(tibble(tool = p[1], row_id = m\$row_id_a, partner = p[2]),
                     tibble(tool = p[2], row_id = m\$row_id_b, partner = p[1]))
     }) |>

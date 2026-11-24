@@ -91,6 +91,7 @@ workflow {
     publish:
     jaffal                = Jaffal.out
     longgf                = Longgf.out
+    ctat_lr               = CTAT_LR.out
     consensus             = Consensus.out
     jaffal_agfusion       = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? AGFusion_Jaffal.out : Channel.empty()
     longgf_agfusion       = (params.containsKey('include_pvacfuse') && params.include_pvacfuse) ? AGFusion_LongGF.out : Channel.empty() 
@@ -103,6 +104,7 @@ output {
 
     jaffal              { path { name, jaffal                                   -> "${name}/jaffal" } }
     longgf              { path { name, longgf                                   -> "${name}/longgf" } }
+    ctat_lr             { path { name, ctat_tsv, ctat_html                      -> "${name}/ctat_lr" } }
     consensus           { path { name, jaffal_consensus_NOnonmalignant,jaffal_consensus_read_and_classification_filtered_NOnonmalignant, jaffal_breakpoint_consensus_NOnonmalignant, longgf_consensus_NOnonmalignant, longgf_consensus_read_and_classification_filtered_NOnonmalignant, longgf_breakpoint_consensus_NOnonmalignant, ctat_consensus_NOnonmalignant, ctat_consensus_read_and_classification_filtered_NOnonmalignant, ctat_breakpoint_consensus_NOnonmalignant       -> "${name}/${params.consensus_outdir}" } }
     jaffal_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
     longgf_agfusion     { path { name, agfusion                                 -> "${name}/agfusion" } }
